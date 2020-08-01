@@ -1,5 +1,6 @@
 from Covid19ApiWrapper import *
-from Covid19India import CovidIndia
+from urllib.request import urlopen , Request
+from bs4 import BeautifulSoup
 
 
 
@@ -8,27 +9,27 @@ def coro():
     Data = x.countryData
     c = []
     si = []
-    obj = CovidIndia()
-    stats = obj.getstats()
-    s = stats['states']
-    state = [i for i in s.keys()]
-
-
+    req = Request('https://www.mygov.in/covid-19' , headers = {'User-Agent' : 'Mozilla/5.0'})
+    webpage = urlopen(req).read()
+    soup = BeautifulSoup(webpage)
+    l = []
+    m = []
+    for link in soup.find_all('div', class_ = 'views-row' ,href=False):
+        for i in link.get_text().split('\n'):
+            if i != '':
+                m.append(i)
+        l.append(m)
+    l = l[1]
 
     j = 0
     for i in Data:
         c.append([i , Data[i]['cases'] , Data[i]['todayCases'] , Data[i]['deaths'] , Data[i]['todayDeaths'] , Data[i]['recovered'] , Data[i]['active'] , Data[i]['tests'] , Data[i]['critical']])
 
-        if j <= len(state) - 1:
-            si.append([])
-            si[j].append(state[j])
-            si[j].append(s[state[j]]['confirmed'])
-            si[j].append(s[state[j]]['active'])
-            si[j].append(s[state[j]]['recovered'])
-            si[j].append(s[state[j]]['deaths'])
-        j += 1
+        if j < len(l):
+            si.append([l[j] , l[j+2].split(' ')[1] , l[j+3].split(' ')[1] , l[j+4].split(' ')[1] , l[j+5].split(' ')[1]])
+        j += 6
 
     l = [x.totalCases, x.totalDeaths, x.totalCases - x.totalDeaths - x.totalRecovered,x.totalRecovered]
 
 
-    return [sorted(c, key = lambda x: x[1])[::-1],sorted(si, key = lambda x: x[1])[::-1],l]
+    return [sorted(c, key = lambda x: x[1])[::-1],si,l]
