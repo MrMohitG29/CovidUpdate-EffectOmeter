@@ -1,4 +1,4 @@
 gunicorn==20.0.4
 Covid19ApiWrapper==0.0.4
 Covid19India==0.0.5
-Django==3.0.5
+Django==3.0.14
